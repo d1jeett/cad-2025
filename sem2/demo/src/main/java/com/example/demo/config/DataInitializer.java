@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class DataInitializer {
-
+    
     @Bean
     public CommandLineRunner initUsers(
             UserRepository userRepository,
@@ -22,10 +22,11 @@ public class DataInitializer {
                 admin.setUsername("admin");
                 admin.setPassword(passwordEncoder.encode("1234"));
                 admin.setRole("ROLE_ADMIN");
-                admin.setEmail("admin@example.com");
+                admin.setEmail("admin@hotel.com");
+                admin.setFullName("Администратор системы");
                 admin.setEnabled(true);
                 userRepository.save(admin);
-                System.out.println("✓ Admin создан: admin / 1234");
+                System.out.println("✓ Администратор создан: admin / 1234");
             }
             
             if (userRepository.findByUsername("moderator").isEmpty()) {
@@ -33,10 +34,11 @@ public class DataInitializer {
                 moderator.setUsername("moderator");
                 moderator.setPassword(passwordEncoder.encode("1234"));
                 moderator.setRole("ROLE_MODERATOR");
-                moderator.setEmail("moderator@example.com");
+                moderator.setEmail("moderator@hotel.com");
+                moderator.setFullName("Модератор отеля");
                 moderator.setEnabled(true);
                 userRepository.save(moderator);
-                System.out.println("✓ Moderator создан: moderator / 1234");
+                System.out.println("✓ Модератор создан: moderator / 1234");
             }
             
             if (userRepository.findByUsername("user").isEmpty()) {
@@ -44,11 +46,27 @@ public class DataInitializer {
                 user.setUsername("user");
                 user.setPassword(passwordEncoder.encode("1234"));
                 user.setRole("ROLE_USER");
-                user.setEmail("user@example.com");
+                user.setEmail("user@hotel.com");
+                user.setFullName("Обычный пользователь");
                 user.setEnabled(true);
                 userRepository.save(user);
-                System.out.println("✓ User создан: user / 1234");
+                System.out.println("✓ Пользователь создан: user / 1234");
             }
+            
+            // Дополнительные пользователи для тестирования
+            if (userRepository.findByUsername("guest1").isEmpty()) {
+                User guest = new User();
+                guest.setUsername("guest1");
+                guest.setPassword(passwordEncoder.encode("1234"));
+                guest.setRole("ROLE_USER");
+                guest.setEmail("guest1@example.com");
+                guest.setFullName("Александр Иванов");
+                guest.setEnabled(true);
+                userRepository.save(guest);
+                System.out.println("✓ Тестовый пользователь создан: guest1 / 1234");
+            }
+            
+            System.out.println("✓ Инициализация пользователей завершена");
         };
     }
 }

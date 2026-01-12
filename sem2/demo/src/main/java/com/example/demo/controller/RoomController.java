@@ -3,8 +3,8 @@ package com.example.demo.controller;
 import com.example.demo.model.Booking;
 import com.example.demo.model.Room;
 import com.example.demo.model.User;
-import com.example.demo.service.BookingService;
 import com.example.demo.service.RoomService;
+import com.example.demo.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +15,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -62,10 +63,10 @@ public class RoomController {
         
         try {
             // Устанавливаем минимальные значения по умолчанию
-            if (room.getPrice() == null || room.getPrice() <= 0) {
-                room.setPrice(1000.0); // цена по умолчанию
+            if (room.getPrice() == null || room.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                room.setPrice(new BigDecimal("1000.00")); // цена по умолчанию
             }
-            if (room.getCapacity() <= 0) {
+            if (room.getCapacity() == null || room.getCapacity() <= 0) {
                 room.setCapacity(1); // минимальная вместимость
             }
             
@@ -113,7 +114,7 @@ public class RoomController {
                 model.addAttribute("isAvailableForDates", isAvailable);
                 
                 if (isAvailable) {
-                    double totalPrice = bookingService.calculateTotalPrice(id, checkIn, checkOut);
+                    BigDecimal totalPrice = bookingService.calculateTotalPrice(id, checkIn, checkOut);
                     model.addAttribute("totalPrice", totalPrice);
                     model.addAttribute("duration", 
                         java.time.temporal.ChronoUnit.DAYS.between(checkIn, checkOut));
@@ -260,7 +261,7 @@ public class RoomController {
         
         try {
             boolean isAvailable = bookingService.isRoomAvailableForDates(id, checkIn, checkOut);
-            double price = 0.0;
+            BigDecimal price = BigDecimal.ZERO;
             
             if (isAvailable) {
                 price = bookingService.calculateTotalPrice(id, checkIn, checkOut);
@@ -269,7 +270,7 @@ public class RoomController {
             return new AvailabilityResponse(isAvailable, price);
             
         } catch (IllegalArgumentException e) {
-            return new AvailabilityResponse(false, 0.0);
+            return new AvailabilityResponse(false, BigDecimal.ZERO);
         }
     }
     
@@ -299,7 +300,7 @@ public class RoomController {
                 model.addAttribute("isAvailable", isAvailable);
                 
                 if (isAvailable) {
-                    double totalPrice = bookingService.calculateTotalPrice(id, checkIn, checkOut);
+                    BigDecimal totalPrice = bookingService.calculateTotalPrice(id, checkIn, checkOut);
                     model.addAttribute("totalPrice", totalPrice);
                 }
             }
@@ -373,22 +374,42 @@ public class RoomController {
     }
     
     /**
+     * Страница управления комнатами для модератора
+     */
+    @GetMapping("/manage")
+    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
+    public String manageRooms(Model model, @AuthenticationPrincipal User user) {
+        List<Room> rooms = roomService.getAllRooms();
+        model.addAttribute("rooms", rooms);
+        
+        // Статистика
+        long totalRooms = rooms.size();
+        long availableRooms = rooms.stream().filter(Room::isAvailable).count();
+        
+        model.addAttribute("totalRooms", totalRooms);
+        model.addAttribute("availableRooms", availableRooms);
+        model.addAttribute("occupiedRooms", totalRooms - availableRooms);
+        
+        return "rooms/manage";
+    }
+    
+    /**
      * DTO для ответа о доступности
      */
     public static class AvailabilityResponse {
         private boolean available;
-        private double price;
+        private BigDecimal price;
         
-        public AvailabilityResponse(boolean available, double price) {
+        public AvailabilityResponse(boolean available, BigDecimal price) {
             this.available = available;
             this.price = price;
         }
         
         public boolean isAvailable() { return available; }
-        public double getPrice() { return price; }
+        public BigDecimal getPrice() { return price; }
         
         public void setAvailable(boolean available) { this.available = available; }
-        public void setPrice(double price) { this.price = price; }
+        public void setPrice(BigDecimal price) { this.price = price; }
     }
     
     /**
@@ -408,25 +429,5 @@ public class RoomController {
         
         public void setSuccess(boolean success) { this.success = success; }
         public void setMessage(String message) { this.message = message; }
-    }
-    
-    /**
-     * Страница управления комнатами для модератора
-     */
-    @GetMapping("/manage")
-    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
-    public String manageRooms(Model model, @AuthenticationPrincipal User user) {
-        List<Room> rooms = roomService.getAllRooms();
-        model.addAttribute("rooms", rooms);
-        
-        // Статистика
-        long totalRooms = rooms.size();
-        long availableRooms = rooms.stream().filter(Room::isAvailable).count();
-        
-        model.addAttribute("totalRooms", totalRooms);
-        model.addAttribute("availableRooms", availableRooms);
-        model.addAttribute("occupiedRooms", totalRooms - availableRooms);
-        
-        return "rooms/manage";
     }
 }

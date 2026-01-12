@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="notifications">
+        <!-- Успешные сообщения -->
+        <div th:if="${success}" class="alert alert-success" style="background: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border-radius: 3px; border: 1px solid #c3e6cb;">
+            ✓ [[${success}]]
+        </div>
+        
+        <!-- Ошибки -->
+        <div th:if="${error}" class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border-radius: 3px; border: 1px solid #f5c6cb;">
+            ✗ [[${error}]]
+        </div>
+        
+        <!-- Информационные сообщения -->
+        <div th:if="${info}" class="alert alert-info" style="background: #d1ecf1; color: #0c5460; padding: 10px; margin: 10px 0; border-radius: 3px; border: 1px solid #bee5eb;">
+            ℹ️ [[${info}]]
+        </div>
+    </div>
+</body>
+</html>

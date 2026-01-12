@@ -1,9 +1,19 @@
 package com.example.demo.model;
 
 public enum BookingStatus {
-    PENDING,      // На рассмотрении
-    APPROVED,     // Одобрено
-    REJECTED,     // Отклонено
-    CANCELLED,    // Отменено пользователем
-    COMPLETED     // Завершено
+    PENDING("Ожидает"),
+    APPROVED("Подтверждено"),
+    REJECTED("Отклонено"),
+    CANCELLED("Отменено"),
+    COMPLETED("Завершено");
+    
+    private final String displayName;
+    
+    BookingStatus(String displayName) {
+        this.displayName = displayName;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+    }
 }

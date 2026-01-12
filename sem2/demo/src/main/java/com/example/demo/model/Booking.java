@@ -1,7 +1,12 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bookings")
@@ -19,30 +24,35 @@ public class Booking {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    @Column(nullable = false)
+    @NotNull(message = "Дата заезда обязательна")
+    @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;
     
-    @Column(nullable = false)
+    @NotNull(message = "Дата выезда обязательна")
+    @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
     
-    @Column(nullable = false)
+    @NotBlank(message = "Имя гостя обязательно")
+    @Column(name = "guest_name", nullable = false, length = 100)
     private String guestName;
     
-    @Column(nullable = false)
+    @NotBlank(message = "Email гостя обязателен")
+    @Email(message = "Некорректный email")
+    @Column(name = "guest_email", nullable = false, length = 100)
     private String guestEmail;
     
+    @Column(name = "special_requests", columnDefinition = "TEXT")
     private String specialRequests;
     
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     private BookingStatus status = BookingStatus.PENDING;
     
-    @Column(nullable = false)
+    @Column(name = "created_at")
     private LocalDate createdAt = LocalDate.now();
     
-    // Транзиентное поле для вычисляемой стоимости
-    @Transient
-    private Double totalPrice;
+    @Column(name = "total_price", precision = 10, scale = 2)
+    private BigDecimal totalPrice;
     
     // Конструкторы
     public Booking() {}
@@ -55,7 +65,6 @@ public class Booking {
         this.checkOutDate = checkOutDate;
         this.guestName = guestName;
         this.guestEmail = guestEmail;
-        this.status = BookingStatus.PENDING;
     }
     
     // Геттеры и сеттеры
@@ -81,9 +90,7 @@ public class Booking {
     public void setGuestEmail(String guestEmail) { this.guestEmail = guestEmail; }
     
     public String getSpecialRequests() { return specialRequests; }
-    public void setSpecialRequests(String specialRequests) { 
-        this.specialRequests = specialRequests; 
-    }
+    public void setSpecialRequests(String specialRequests) { this.specialRequests = specialRequests; }
     
     public BookingStatus getStatus() { return status; }
     public void setStatus(BookingStatus status) { this.status = status; }
@@ -91,29 +98,35 @@ public class Booking {
     public LocalDate getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
     
-    // Расчет длительности пребывания
+    public BigDecimal getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
+    
+    // Расчетные поля
+    @Transient
     public Integer getDuration() {
         return (int) java.time.temporal.ChronoUnit.DAYS.between(checkInDate, checkOutDate);
     }
     
-    // Расчет общей стоимости
-    public Double getTotalPrice() {
-        if (room != null && room.getPrice() != null) {
-            return room.getPrice() * getDuration();
+    @Transient
+    public BigDecimal calculateTotalPrice() {
+        if (room != null && room.getPrice() != null && getDuration() > 0) {
+            return room.getPrice().multiply(BigDecimal.valueOf(getDuration()));
         }
-        return 0.0;
+        return BigDecimal.ZERO;
     }
     
-    public void setTotalPrice(Double totalPrice) {
-        this.totalPrice = totalPrice;
+    @PrePersist
+    @PreUpdate
+    private void calculatePrice() {
+        this.totalPrice = calculateTotalPrice();
     }
     
-    // Проверка, активна ли бронь
+    // Проверка активности бронирования
     public boolean isActive() {
         return status == BookingStatus.PENDING || status == BookingStatus.APPROVED;
     }
     
-    // Проверка, можно ли отменить
+    // Проверка возможности отмены
     public boolean canBeCancelled() {
         return isActive() && checkInDate.isAfter(LocalDate.now().plusDays(1));
     }

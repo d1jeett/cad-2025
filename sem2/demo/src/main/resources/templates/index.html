@@ -4,266 +4,963 @@
 <head>
     <meta charset="UTF-8">
     <title>Система бронирования отеля</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            gap: 20px;
-        }
-        .left-panel {
-            flex: 1;
-            background: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .right-panel {
-            flex: 2;
-            background: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .section {
-            margin-bottom: 30px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
-        .room-card {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 10px 0;
-            background: #f9f9f9;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 5px;
-            margin: 5px 0;
-            box-sizing: border-box;
-        }
-        button {
-            background: #007bff;
-            color: white;
-            padding: 8px 15px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            margin: 5px 0;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .btn-add {
-            background: #28a745;
-        }
-        .btn-add:hover {
-            background: #218838;
-        }
-        .btn-danger {
-            background: #dc3545;
-        }
-        .btn-danger:hover {
-            background: #c82333;
-        }
+        
         .header {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
             color: white;
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
+            padding: 15px 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .user-info {
-            color: #ecf0f1;
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        h2, h3 {
-            color: #2c3e50;
-            margin-top: 0;
-        }
-        .message {
+        
+        .logo i {
+            font-size: 32px;
+            background: rgba(255,255,255,0.1);
             padding: 10px;
-            margin: 10px 0;
-            border-radius: 3px;
+            border-radius: 50%;
         }
-        .success {
+        
+        .logo h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .user-info i {
+            font-size: 16px;
+        }
+        
+        .role-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #7f8c8d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .main-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            height: fit-content;
+        }
+        
+        .content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #3498db;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+            color: white;
+            width: 100%;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+        }
+        
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .room-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .room-header {
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: white;
+            padding: 25px;
+            position: relative;
+        }
+        
+        .room-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .room-type {
+            font-size: 14px;
+            opacity: 0.9;
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+        }
+        
+        .room-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.2);
+            font-weight: 600;
+        }
+        
+        .room-body {
+            padding: 25px;
+        }
+        
+        .room-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            min-height: 60px;
+        }
+        
+        .room-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #555;
+        }
+        
+        .feature i {
+            color: #3498db;
+            font-size: 16px;
+            width: 20px;
+        }
+        
+        .room-price {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: #27ae60;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8fff9;
+            border-radius: 10px;
+            border: 2px dashed #27ae60;
+        }
+        
+        .room-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 0 25px 25px;
+        }
+        
+        .view-details-btn {
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .view-details-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .quick-book-btn {
+            background: #9b59b6;
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .quick-book-btn:hover {
+            background: #8e44ad;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+        }
+        
+        .booking-form {
+            background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .booking-form h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 5px solid;
+        }
+        
+        .alert-success {
             background: #d4edda;
             color: #155724;
-            border: 1px solid #c3e6cb;
+            border-color: #27ae60;
         }
-        .error {
+        
+        .alert-error {
             background: #f8d7da;
             color: #721c24;
-            border: 1px solid #f5c6cb;
+            border-color: #e74c3c;
         }
-        .test-users {
-            background: #e9ecef;
-            padding: 10px;
-            border-radius: 3px;
+        
+        .test-users-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .test-users-box h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+        }
+        
+        .user-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .user-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .user-role {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .user-role.user {
+            background: #3498db;
+            color: white;
+        }
+        
+        .user-role.moderator {
+            background: #9b59b6;
+            color: white;
+        }
+        
+        .user-role.admin {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .no-rooms {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+        
+        .no-rooms i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        
+        .no-rooms h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+        
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            color: #555;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .nav-link:hover {
+            background: #3498db;
+            color: white;
+            transform: translateX(8px);
+        }
+        
+        .nav-link i {
+            font-size: 18px;
+            width: 24px;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .search-filter {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            background: white url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%233498db" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 95% center;
+            background-size: 20px;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .rooms-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .rooms-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .room-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .room-bookings-count {
             font-size: 12px;
+            color: #7f8c8d;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
-        .booking-form {
-            background: #e8f4fd;
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid #b6d4fe;
+        
+        .availability-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .available {
+            background: #27ae60;
+        }
+        
+        .unavailable {
+            background: #e74c3c;
+        }
+        
+        .delete-form {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: auto;
         }
     </style>
 </head>
 <body>
     <!-- Шапка -->
-    <div class="header">
-        <h1>🏨 Система бронирования отеля</h1>
-        <div class="user-info">
-            <div sec:authorize="!isAuthenticated()">
-                <a href="/login" style="color: white; margin-right: 10px;">Вход</a>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-hotel"></i>
+                <h1>Отель Премиум</h1>
             </div>
-            <div sec:authorize="isAuthenticated()">
-                <span>Пользователь: <span sec:authentication="name"></span></span>
-                <form th:action="@{/logout}" method="post" style="display:inline; margin-left: 10px;">
-                    <button type="submit" style="padding: 3px 8px; font-size: 12px;">Выход</button>
-                </form>
+            
+            <div class="user-menu">
+                <div class="user-info" sec:authorize="isAuthenticated()">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Добро пожаловать, <strong sec:authentication="name"></strong></span>
+                    <span class="role-badge" sec:authentication="authorities"></span>
+                </div>
+                
+                <div class="user-info" sec:authorize="!isAuthenticated()">
+                    <i class="fas fa-user-clock"></i>
+                    <span>Гость</span>
+                </div>
+                
+                <div sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-sign-out-alt"></i> Выйти
+                        </button>
+                    </form>
+                </div>
+                
+                <div sec:authorize="!isAuthenticated()">
+                    <a href="/login" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Войти
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
+    </header>
 
     <!-- Основной контейнер -->
-    <div class="container">
-        <!-- Левый блок: Управление комнатами -->
-        <div class="left-panel">
-            <h2>Управление комнатами</h2>
-            
-            <!-- Форма добавления комнаты -->
-            <div sec:authorize="hasRole('MODERATOR') or hasRole('ADMIN')" class="section">
-                <h3>Добавить новую комнату</h3>
+    <main class="main-container">
+        <!-- Левая панель -->
+        <aside class="sidebar">
+            <!-- Форма добавления комнаты (только для модератора и админа) -->
+            <div sec:authorize="hasAnyRole('MODERATOR', 'ADMIN')">
+                <h3 class="section-title">
+                    <i class="fas fa-plus-circle"></i> Добавить комнату
+                </h3>
                 
                 <form th:action="@{/rooms/create}" method="post">
-                    <input type="text" name="number" placeholder="Номер комнаты (например: 23)" required>
+                    <div class="form-group">
+                        <label for="number">Номер комнаты</label>
+                        <input type="text" id="number" name="number" class="form-control" 
+                               placeholder="Например: 101, 202..." required>
+                    </div>
                     
-                    <select name="type" required>
-                        <option value="">Выберите тип</option>
-                        <option value="STANDARD">Стандарт</option>
-                        <option value="VIP">VIP</option>
-                        <option value="DELUXE">Делюкс</option>
-                        <option value="SUITE">Люкс</option>
-                    </select>
+                    <div class="form-group">
+                        <label for="type">Тип комнаты</label>
+                        <select id="type" name="type" class="form-control" required>
+                            <option value="">Выберите тип</option>
+                            <option value="STANDARD">Стандарт</option>
+                            <option value="VIP">VIP</option>
+                            <option value="DELUXE">Делюкс</option>
+                            <option value="SUITE">Люкс</option>
+                            <option value="FAMILY">Семейный</option>
+                            <option value="EXECUTIVE">Бизнес</option>
+                        </select>
+                    </div>
                     
-                    <textarea name="description" placeholder="Описание" rows="2"></textarea>
+                    <div class="form-group">
+                        <label for="description">Описание</label>
+                        <textarea id="description" name="description" class="form-control" 
+                                  rows="3" placeholder="Описание комнаты и удобств..."></textarea>
+                    </div>
                     
-                    <input type="number" name="price" placeholder="Цена (руб.)" step="0.01" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Цена за ночь (₽)</label>
+                            <input type="number" id="price" name="price" class="form-control" 
+                                   step="0.01" min="0" placeholder="1000" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="capacity">Вместимость (чел.)</label>
+                            <input type="number" id="capacity" name="capacity" class="form-control" 
+                                   min="1" max="10" placeholder="2" required>
+                        </div>
+                    </div>
                     
-                    <input type="number" name="capacity" placeholder="Вместимость (чел.)" required>
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="available" name="available" checked>
+                        <label for="available">Доступна для бронирования</label>
+                    </div>
                     
-                    <label style="display: block; margin: 5px 0;">
-                        <input type="checkbox" name="available" checked> Доступна для бронирования
-                    </label>
-                    
-                    <button type="submit" class="btn-add">+ Добавить комнату</button>
+                    <button type="submit" class="btn btn-add">
+                        <i class="fas fa-plus"></i> Добавить комнату
+                    </button>
                 </form>
+            </div>
+
+            <!-- Навигация -->
+            <div class="nav-links">
+                <a href="/booking/my" class="nav-link" sec:authorize="isAuthenticated()">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Мои бронирования</span>
+                </a>
+                
+                <a href="/booking/pending" class="nav-link" 
+                   sec:authorize="hasAnyRole('MODERATOR', 'ADMIN')">
+                    <i class="fas fa-clock"></i>
+                    <span>Ожидающие бронирования</span>
+                </a>
+                
+                <a href="/rooms/manage" class="nav-link" 
+                   sec:authorize="hasAnyRole('MODERATOR', 'ADMIN')">
+                    <i class="fas fa-cogs"></i>
+                    <span>Управление комнатами</span>
+                </a>
+                
+                <a href="/rooms/all" class="nav-link" 
+                   sec:authorize="hasAnyRole('MODERATOR', 'ADMIN')">
+                    <i class="fas fa-list"></i>
+                    <span>Все комнаты</span>
+                </a>
+                
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>На главную</span>
+                </a>
             </div>
 
             <!-- Тестовые пользователи -->
-            <div class="test-users">
-                <strong>Тестовые пользователи:</strong><br>
-                • user / 1234 (обычный пользователь)<br>
-                • moderator / 1234 (модератор)<br>
-                • admin / 1234 (администратор)
-            </div>
-
-            <!-- Мои бронирования -->
-            <div sec:authorize="isAuthenticated()" class="section">
-                <h3>Мои бронирования</h3>
-                <a href="/booking/my" style="color: #007bff; text-decoration: none;">→ Посмотреть все мои бронирования</a>
+            <div class="test-users-box">
+                <h4>
+                    <i class="fas fa-users"></i> Тестовые пользователи
+                </h4>
+                <ul class="user-list">
+                    <li>
+                        <span>user</span>
+                        <span class="user-role user">USER</span>
+                    </li>
+                    <li>
+                        <span>moderator</span>
+                        <span class="user-role moderator">MODERATOR</span>
+                    </li>
+                    <li>
+                        <span>admin</span>
+                        <span class="user-role admin">ADMIN</span>
+                    </li>
+                    <li style="font-size: 11px; color: #666; margin-top: 10px;">
+                        Пароль для всех: <strong>1234</strong>
+                    </li>
+                </ul>
             </div>
 
             <!-- Для гостей -->
-            <div sec:authorize="!isAuthenticated()" class="section">
-                <h3>Для бронирования</h3>
-                <p>Войдите в систему, чтобы бронировать комнаты</p>
-                <a href="/login" style="color: #007bff; text-decoration: none;">→ Войти в систему</a>
+            <div sec:authorize="!isAuthenticated()" style="margin-top: 25px; padding: 20px; 
+                 background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); 
+                 color: white; border-radius: 10px; text-align: center;">
+                <i class="fas fa-lock" style="font-size: 24px; margin-bottom: 10px;"></i>
+                <h4 style="margin: 0 0 10px 0;">Для бронирования</h4>
+                <p style="margin: 0 0 15px 0; font-size: 14px; opacity: 0.9;">
+                    Войдите в систему, чтобы забронировать комнату
+                </p>
+                <a href="/login" class="btn" 
+                   style="background: white; color: #3498db; width: 100%; justify-content: center;">
+                    <i class="fas fa-sign-in-alt"></i> Войти в систему
+                </a>
             </div>
-        </div>
+        </aside>
 
-        <!-- Правый блок: Список комнат для бронирования -->
-        <div class="right-panel">
-            <h2>Доступные для бронирования комнаты</h2>
-            
+        <!-- Основной контент -->
+        <div class="content">
+            <!-- Заголовок -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="margin: 0; color: #2c3e50; font-size: 28px;">
+                    <i class="fas fa-door-open"></i> Доступные комнаты
+                </h2>
+                <div style="display: flex; gap: 10px;">
+                    <span style="background: #27ae60; color: white; padding: 5px 15px; 
+                          border-radius: 15px; font-size: 14px;">
+                        <i class="fas fa-bed"></i> [[${rooms != null ? rooms.size() : 0}]] комнат
+                    </span>
+                </div>
+            </div>
+
             <!-- Сообщения -->
-            <div th:if="${success}" class="message success">
-                [[${success}]]
+            <div th:if="${success}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i> [[${success}]]
             </div>
-            <div th:if="${error}" class="message error">
-                [[${error}]]
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> [[${error}]]
             </div>
-            
+
+            <!-- Поиск и фильтры -->
+            <div class="search-filter">
+                <input type="text" class="search-input" placeholder="Поиск по номеру или описанию...">
+            </div>
+
             <!-- Список комнат -->
             <div th:if="${rooms != null and !rooms.empty}">
-                <div th:each="room : ${rooms}">
-                    <div class="room-card">
-                        <h3>Комната №[[${room.number}]] ([[${room.type}]])</h3>
-                        <p><strong>Вместимость:</strong> [[${room.capacity}]] чел.</p>
-                        <p><strong>Цена:</strong> [[${room.price}]] руб./ночь</p>
-                        <p>[[${room.description}]]</p>
-                        
-                        <!-- Форма бронирования -->
-                        <div sec:authorize="isAuthenticated()" class="booking-form">
-                            <h4>Забронировать эту комнату:</h4>
-                            <form th:action="@{/booking/create}" method="post">
-                                <input type="hidden" name="roomId" th:value="${room.id}">
+                <div class="rooms-grid">
+                    <div th:each="room : ${rooms}">
+                        <div class="room-card">
+                            <!-- Заголовок карточки -->
+                            <div class="room-header">
+                                <div class="room-number">№[[${room.number}]]</div>
+                                <div class="room-type">[[${room.type}]]</div>
+                                <div class="room-status">
+                                    <span th:if="${room.available}" style="color: #27ae60;">
+                                        <i class="fas fa-check-circle"></i> Доступна
+                                    </span>
+                                    <span th:unless="${room.available}" style="color: #e74c3c;">
+                                        <i class="fas fa-times-circle"></i> Недоступна
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Тело карточки -->
+                            <div class="room-body">
+                                <div class="room-description" th:text="${room.description} ?: 'Комфортабельная комната со всеми удобствами'">
+                                </div>
                                 
-                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                    <div style="flex: 1;">
-                                        <label style="font-size: 12px;">Дата заезда:</label>
-                                        <input type="date" name="checkIn" required id="checkIn_[[${room.id}]]">
+                                <div class="room-features">
+                                    <div class="feature">
+                                        <i class="fas fa-users"></i>
+                                        <span>[[${room.capacity}]] чел.</span>
                                     </div>
-                                    <div style="flex: 1;">
-                                        <label style="font-size: 12px;">Дата выезда:</label>
-                                        <input type="date" name="checkOut" required id="checkOut_[[${room.id}]]">
+                                    <div class="feature">
+                                        <i class="fas fa-wifi"></i>
+                                        <span>Wi-Fi</span>
+                                    </div>
+                                    <div class="feature">
+                                        <i class="fas fa-tv"></i>
+                                        <span>Телевизор</span>
+                                    </div>
+                                    <div class="feature">
+                                        <i class="fas fa-snowflake"></i>
+                                        <span>Кондиционер</span>
                                     </div>
                                 </div>
                                 
-                                <input type="text" name="guestName" placeholder="Ваше имя" required>
-                                <input type="email" name="guestEmail" placeholder="Email" required>
-                                <textarea name="specialRequests" placeholder="Дополнительные пожелания" rows="2"></textarea>
+                                <div class="room-price">
+                                    [[${room.price}]] ₽ <span style="font-size: 14px; color: #7f8c8d;">/ ночь</span>
+                                </div>
                                 
-                                <button type="submit">Забронировать</button>
-                            </form>
-                        </div>
-                        
-                        <!-- Для неавторизованных -->
-                        <div sec:authorize="!isAuthenticated()">
-                            <p style="color: #666; font-style: italic;">Для бронирования войдите в систему</p>
-                        </div>
-                        
-                        <!-- Кнопка удаления (только для админов) -->
-                        <div sec:authorize="hasRole('ADMIN')" style="margin-top: 10px;">
-                            <form th:action="@{'/rooms/delete/' + ${room.id}}" method="post" 
-                                  th:attr="onsubmit='return confirm(\'Удалить комнату №' + ${room.number} + '?\')'">
-                                <button type="submit" class="btn-danger" style="padding: 3px 8px; font-size: 12px;">Удалить комнату</button>
-                            </form>
+                                <!-- Ссылка на детали комнаты -->
+                                <div class="room-bookings-count">
+                                    <i class="fas fa-info-circle"></i>
+                                    <a th:href="@{'/rooms/' + ${room.id}}" class="view-details-btn" 
+                                       style="display: inline-flex; padding: 5px 15px; font-size: 14px;">
+                                        <i class="fas fa-external-link-alt"></i> Подробнее о комнате
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Действия -->
+                            <div class="room-actions">
+                                <a th:href="@{'/rooms/' + ${room.id}}" class="view-details-btn">
+                                    <i class="fas fa-search"></i> Подробности
+                                </a>
+                                
+                                <a th:href="@{'/rooms/' + ${room.id} + '/book'}" 
+                                   class="quick-book-btn" sec:authorize="isAuthenticated()">
+                                    <i class="fas fa-calendar-plus"></i> Быстрое бронирование
+                                </a>
+                                
+                                <div sec:authorize="!isAuthenticated()" style="text-align: center; padding: 12px;">
+                                    <a href="/login" style="color: #3498db; text-decoration: none; 
+                                       font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <i class="fas fa-sign-in-alt"></i> Войти для бронирования
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Форма бронирования (только для авторизованных) -->
+                            <div sec:authorize="isAuthenticated()" class="booking-form">
+                                <h4>
+                                    <i class="fas fa-calendar-check"></i> Забронировать эту комнату
+                                </h4>
+                                <form th:action="@{/booking/create}" method="post">
+                                    <input type="hidden" name="roomId" th:value="${room.id}">
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label style="font-size: 12px;">Дата заезда</label>
+                                            <input type="date" name="checkIn" class="form-control" 
+                                                   required th:id="${'checkIn_' + room.id}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label style="font-size: 12px;">Дата выезда</label>
+                                            <input type="date" name="checkOut" class="form-control" 
+                                                   required th:id="${'checkOut_' + room.id}">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <input type="text" name="guestName" class="form-control" 
+                                               placeholder="Ваше имя" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <input type="email" name="guestEmail" class="form-control" 
+                                               placeholder="Email" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <textarea name="specialRequests" class="form-control" 
+                                                  rows="2" placeholder="Дополнительные пожелания"></textarea>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn" 
+                                            style="width: 100%; justify-content: center; background: #9b59b6;">
+                                        <i class="fas fa-paper-plane"></i> Забронировать
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- Кнопка удаления (только для админов) -->
+                            <div sec:authorize="hasRole('ADMIN')" class="delete-form">
+                                <form th:action="@{'/rooms/delete/' + ${room.id}}" method="post" 
+                                      th:attr="onsubmit='return confirm(\'Вы уверены, что хотите удалить комнату №' + ${room.number} + '?\')'">
+                                    <button type="submit" class="delete-btn">
+                                        <i class="fas fa-trash"></i> Удалить комнату
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Если комнат нет -->
-            <div th:if="${rooms == null or rooms.empty}">
-                <p style="color: #666; font-style: italic;">Нет доступных комнат для бронирования.</p>
-                <div sec:authorize="hasRole('MODERATOR') or hasRole('ADMIN')">
-                    <p>Добавьте первую комнату в левой панели.</p>
+            <div th:if="${rooms == null or rooms.empty}" class="no-rooms">
+                <i class="fas fa-door-closed"></i>
+                <h3>Нет доступных комнат</h3>
+                <p>В настоящее время все комнаты заняты или находятся на обслуживании.</p>
+                
+                <div sec:authorize="hasAnyRole('MODERATOR', 'ADMIN')" style="margin-top: 20px;">
+                    <a href="/rooms/create" class="btn btn-add" style="width: auto;">
+                        <i class="fas fa-plus"></i> Добавить первую комнату
+                    </a>
+                </div>
+                
+                <div sec:authorize="!hasAnyRole('MODERATOR', 'ADMIN')" style="margin-top: 20px;">
+                    <p>Пожалуйста, проверьте позже или свяжитесь с администрацией отеля.</p>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         // Автозаполнение дат
@@ -299,9 +996,45 @@
                     const submitBtn = this.querySelector('button[type="submit"]');
                     if (submitBtn) {
                         submitBtn.disabled = true;
-                        submitBtn.textContent = 'Обработка...';
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Обработка...';
                     }
                 });
+            });
+            
+            // Поиск комнат
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const roomCards = document.querySelectorAll('.room-card');
+                    
+                    roomCards.forEach(card => {
+                        const roomNumber = card.querySelector('.room-number').textContent.toLowerCase();
+                        const roomDescription = card.querySelector('.room-description').textContent.toLowerCase();
+                        const roomType = card.querySelector('.room-type').textContent.toLowerCase();
+                        
+                        if (roomNumber.includes(searchTerm) || 
+                            roomDescription.includes(searchTerm) || 
+                            roomType.includes(searchTerm)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Анимация карточек при загрузке
+            const roomCards = document.querySelectorAll('.room-card');
+            roomCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
             });
         });
     </script>
