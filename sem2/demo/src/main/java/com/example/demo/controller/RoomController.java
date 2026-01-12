@@ -3,8 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.model.Booking;
 import com.example.demo.model.Room;
 import com.example.demo.model.User;
-import com.example.demo.service.RoomService;
+import com.example.demo.model.BookingStatus;
 import com.example.demo.service.BookingService;
+import com.example.demo.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Controller
@@ -51,23 +53,20 @@ public class RoomController {
      */
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
-    public String createRoom(@ModelAttribute("room") @Valid Room room,
-                           BindingResult bindingResult,
+    public String createRoom(@ModelAttribute("room") Room room,
                            @AuthenticationPrincipal User user,
                            RedirectAttributes redirectAttributes) {
         
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("error", "Пожалуйста, проверьте введенные данные");
-            return "redirect:/rooms/create";
-        }
-        
         try {
-            // Устанавливаем минимальные значения по умолчанию
+            // Устанавливаем значения по умолчанию
             if (room.getPrice() == null || room.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-                room.setPrice(new BigDecimal("1000.00")); // цена по умолчанию
+                room.setPrice(new BigDecimal("1000.00"));
             }
             if (room.getCapacity() == null || room.getCapacity() <= 0) {
-                room.setCapacity(1); // минимальная вместимость
+                room.setCapacity(2);
+            }
+            if (room.getAvailable() == null) {
+                room.setAvailable(true);
             }
             
             roomService.saveRoom(room);
@@ -78,6 +77,7 @@ public class RoomController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", 
                 "Ошибка при создании комнаты: " + e.getMessage());
+            return "redirect:/rooms/create";
         }
         
         return "redirect:/";
@@ -117,14 +117,14 @@ public class RoomController {
                     BigDecimal totalPrice = bookingService.calculateTotalPrice(id, checkIn, checkOut);
                     model.addAttribute("totalPrice", totalPrice);
                     model.addAttribute("duration", 
-                        java.time.temporal.ChronoUnit.DAYS.between(checkIn, checkOut));
+                        ChronoUnit.DAYS.between(checkIn, checkOut));
                 }
             }
             
             // Статистика по комнате
             long totalBookings = bookings.size();
             long approvedBookings = bookings.stream()
-                .filter(b -> b.getStatus() == com.example.demo.model.BookingStatus.APPROVED)
+                .filter(b -> b.getStatus() == BookingStatus.APPROVED)
                 .count();
             model.addAttribute("totalBookings", totalBookings);
             model.addAttribute("approvedBookings", approvedBookings);
@@ -170,13 +170,13 @@ public class RoomController {
         try {
             Room existingRoom = roomService.getRoomById(id);
             
-            // Обновляем только разрешенные поля
+            // Обновляем поля
             existingRoom.setNumber(roomDetails.getNumber());
             existingRoom.setType(roomDetails.getType());
             existingRoom.setDescription(roomDetails.getDescription());
             existingRoom.setPrice(roomDetails.getPrice());
             existingRoom.setCapacity(roomDetails.getCapacity());
-            existingRoom.setAvailable(roomDetails.isAvailable());
+            existingRoom.setAvailable(roomDetails.getAvailable());
             
             roomService.saveRoom(existingRoom);
             
@@ -186,6 +186,7 @@ public class RoomController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", 
                 "Ошибка при обновлении комнаты: " + e.getMessage());
+            return "redirect:/rooms/edit/" + id;
         }
         
         return "redirect:/rooms/" + id;
@@ -205,8 +206,8 @@ public class RoomController {
             // Проверяем, есть ли активные бронирования
             List<Booking> bookings = bookingService.getBookingsByRoom(id);
             boolean hasActiveBookings = bookings.stream()
-                .anyMatch(b -> b.getStatus() == com.example.demo.model.BookingStatus.APPROVED || 
-                             b.getStatus() == com.example.demo.model.BookingStatus.PENDING);
+                .anyMatch(b -> b.getStatus() == BookingStatus.APPROVED || 
+                             b.getStatus() == BookingStatus.PENDING);
             
             if (hasActiveBookings) {
                 redirectAttributes.addFlashAttribute("error", 
@@ -220,6 +221,7 @@ public class RoomController {
             
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка: " + e.getMessage());
+            return "redirect:/rooms/" + id;
         }
         
         return "redirect:/";
@@ -241,9 +243,10 @@ public class RoomController {
      */
     @GetMapping("/search")
     public String searchRooms(@RequestParam String query, Model model) {
-        List<Room> rooms = roomService.getAllRooms().stream()
+        List<Room> allRooms = roomService.getAllRooms();
+        List<Room> rooms = allRooms.stream()
             .filter(room -> room.getNumber().toLowerCase().contains(query.toLowerCase()))
-            .collect(java.util.stream.Collectors.toList());
+            .toList();
         
         model.addAttribute("rooms", rooms);
         model.addAttribute("searchQuery", query);
@@ -275,40 +278,42 @@ public class RoomController {
     }
     
     /**
-     * Форма быстрого бронирования с предварительной проверкой
+     * Быстрое бронирование - проверка и переход к созданию
      */
     @GetMapping("/{id}/book")
     public String quickBookRoom(@PathVariable Long id,
                               @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate checkIn,
                               @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate checkOut,
-                              Model model) {
+                              RedirectAttributes redirectAttributes) {
         
         try {
+            // Проверяем существование комнаты
             Room room = roomService.getRoomById(id);
-            model.addAttribute("room", room);
             
-            LocalDate today = LocalDate.now();
-            model.addAttribute("today", today);
-            model.addAttribute("minDate", today.plusDays(1));
-            model.addAttribute("maxDate", today.plusMonths(3));
-            
-            // Если даты указаны, проверяем доступность
-            if (checkIn != null && checkOut != null) {
-                boolean isAvailable = bookingService.isRoomAvailableForDates(id, checkIn, checkOut);
-                model.addAttribute("checkIn", checkIn);
-                model.addAttribute("checkOut", checkOut);
-                model.addAttribute("isAvailable", isAvailable);
-                
-                if (isAvailable) {
-                    BigDecimal totalPrice = bookingService.calculateTotalPrice(id, checkIn, checkOut);
-                    model.addAttribute("totalPrice", totalPrice);
-                }
+            // Если даты не указаны, просто показываем страницу деталей
+            if (checkIn == null || checkOut == null) {
+                // Перенаправляем на страницу деталей комнаты
+                return "redirect:/rooms/" + id;
             }
             
-            return "rooms/quick-book";
+            // Проверяем доступность на даты
+            boolean isAvailable = bookingService.isRoomAvailableForDates(id, checkIn, checkOut);
+            
+            if (isAvailable) {
+                // Если доступно, перенаправляем на страницу создания бронирования
+                return "redirect:/booking/create?roomId=" + id + 
+                       "&checkIn=" + checkIn + 
+                       "&checkOut=" + checkOut;
+            } else {
+                // Если недоступно, показываем ошибку на странице деталей
+                redirectAttributes.addFlashAttribute("error", 
+                    "Комната №" + room.getNumber() + " недоступна с " + 
+                    checkIn + " по " + checkOut);
+                return "redirect:/rooms/" + id;
+            }
             
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/";
         }
     }
@@ -321,7 +326,7 @@ public class RoomController {
         List<Room> allRooms = roomService.getAllRooms();
         List<Room> filteredRooms = allRooms.stream()
             .filter(room -> room.getType().equalsIgnoreCase(type))
-            .collect(java.util.stream.Collectors.toList());
+            .toList();
         
         model.addAttribute("rooms", filteredRooms);
         model.addAttribute("roomType", type);
@@ -384,7 +389,9 @@ public class RoomController {
         
         // Статистика
         long totalRooms = rooms.size();
-        long availableRooms = rooms.stream().filter(Room::isAvailable).count();
+        long availableRooms = rooms.stream()
+            .filter(room -> Boolean.TRUE.equals(room.getAvailable()))
+            .count();
         
         model.addAttribute("totalRooms", totalRooms);
         model.addAttribute("availableRooms", availableRooms);

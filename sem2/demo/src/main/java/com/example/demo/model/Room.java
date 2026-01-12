@@ -78,8 +78,12 @@ public class Room {
     public Integer getCapacity() { return capacity; }
     public void setCapacity(Integer capacity) { this.capacity = capacity; }
     
-    public Boolean isAvailable() { return available; }
+    // ИЗМЕНЕНИЕ ЗДЕСЬ: Правильный геттер для Boolean поля
+    public Boolean getAvailable() { return available; }  // Было: isAvailable()
     public void setAvailable(Boolean available) { this.available = available; }
+    
+    // Или можно оставить оба геттера для совместимости
+    public Boolean isAvailable() { return available; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
