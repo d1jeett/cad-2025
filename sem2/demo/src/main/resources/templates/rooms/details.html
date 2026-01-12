@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Комната [[${room.number}]]</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .room-details { background: #f9f9f9; padding: 20px; border-radius: 5px; }
+        .booking-form { background: #e8f4fd; padding: 15px; margin-top: 20px; border-radius: 5px; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; }
+        .btn { padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .calendar { display: flex; flex-wrap: wrap; gap: 5px; margin: 20px 0; }
+        .day { width: 40px; height: 40px; border: 1px solid #ddd; text-align: center; line-height: 40px; }
+        .booked { background: #ff6b6b; color: white; }
+        .available { background: #51cf66; color: white; }
+        .today { background: #339af0; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Комната №[[${room.number}]]</h1>
+    <a href="/">← Назад к списку комнат</a>
+    
+    <div class="room-details">
+        <h2>[[${room.type}]]</h2>
+        <p><strong>Описание:</strong> [[${room.description}]]</p>
+        <p><strong>Вместимость:</strong> [[${room.capacity}]] чел.</p>
+        <p><strong>Цена:</strong> [[${room.price}]] руб./ночь</p>
+        <p><strong>Статус:</strong> 
+            <span th:if="${room.available}" style="color: green;">✓ Доступна</span>
+            <span th:unless="${room.available}" style="color: red;">✗ Недоступна</span>
+        </p>
+    </div>
+    
+    <!-- Форма бронирования -->
+    <div sec:authorize="isAuthenticated()" class="booking-form">
+        <h3>Забронировать эту комнату</h3>
+        <form th:action="@{/booking/create}" method="post">
+            <input type="hidden" name="roomId" th:value="${room.id}">
+            
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Дата заезда:</label>
+                    <input type="date" name="checkIn" th:min="${minDate}" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Дата выезда:</label>
+                    <input type="date" name="checkOut" th:min="${minDate}" required>
+                </div>
+            </div>
+            
+            <label>Ваше имя:</label>
+            <input type="text" name="guestName" required>
+            
+            <label>Email:</label>
+            <input type="email" name="guestEmail" required>
+            
+            <label>Дополнительные пожелания:</label>
+            <textarea name="specialRequests" rows="3"></textarea>
+            
+            <button type="submit" class="btn">Забронировать</button>
+        </form>
+    </div>
+    
+    <!-- Для неавторизованных -->
+    <div sec:authorize="!isAuthenticated()">
+        <p style="color: #666; font-style: italic;">
+            Для бронирования войдите в систему. 
+            <a href="/login">Войти</a>
+        </p>
+    </div>
+    
+    <!-- Список бронирований (для модератора и администратора) -->
+    <div sec:authorize="hasAnyRole('MODERATOR', 'ADMIN')" style="margin-top: 30px;">
+        <h3>Бронирования этой комнаты:</h3>
+        <table style="width: 100%; border-collapse: collapse;" th:if="${not bookings.empty}">
+            <thead>
+                <tr style="background: #f2f2f2;">
+                    <th style="padding: 8px; border: 1px solid #ddd;">ID</th>
+                    <th style="padding: 8px; border: 1px solid #ddd;">Гость</th>
+                    <th style="padding: 8px; border: 1px solid #ddd;">Даты</th>
+                    <th style="padding: 8px; border: 1px solid #ddd;">Статус</th>
+                    <th style="padding: 8px; border: 1px solid #ddd;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="booking : ${bookings}">
+                    <td style="padding: 8px; border: 1px solid #ddd;">[[${booking.id}]]</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">[[${booking.guestName}]]</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                        [[${#temporals.format(booking.checkInDate, 'dd.MM.yyyy')}]] - 
+                        [[${#temporals.format(booking.checkOutDate, 'dd.MM.yyyy')}]]
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                        <span th:switch="${booking.status}">
+                            <span th:case="PENDING" style="color: orange;">Ожидает</span>
+                            <span th:case="APPROVED" style="color: green;">Подтверждено</span>
+                            <span th:case="REJECTED" style="color: red;">Отклонено</span>
+                            <span th:case="CANCELLED" style="color: gray;">Отменено</span>
+                        </span>
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">
+                        <a th:href="@{/booking/approve/} + ${booking.id}" 
+                           th:if="${booking.status == 'PENDING'}" 
+                           style="color: green; margin-right: 10px;">✓ Одобрить</a>
+                        <a th:href="@{/booking/reject/} + ${booking.id}" 
+                           th:if="${booking.status == 'PENDING'}" 
+                           style="color: red;">✗ Отклонить</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p th:if="${bookings.empty}">Нет бронирований для этой комнаты.</p>
+    </div>
+</body>
+</html>

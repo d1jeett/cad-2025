@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать комнату</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .form-container { max-width: 500px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-danger { background: #dc3545; }
+        .alert { padding: 10px; margin: 10px 0; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Редактировать комнату №[[${room.number}]]</h1>
+        
+        <div th:if="${success}" class="alert alert-success">
+            [[${success}]]
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+            [[${error}]]
+        </div>
+        
+        <form th:action="@{'/rooms/edit/' + ${room.id}}" method="post" th:object="${room}">
+            <div class="form-group">
+                <label>Номер комнаты:</label>
+                <input type="text" th:field="*{number}" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Тип комнаты:</label>
+                <select th:field="*{type}" required>
+                    <option th:each="type : ${roomTypes}" 
+                            th:value="${type}" 
+                            th:text="${type}"
+                            th:selected="${type == room.type}"></option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Описание:</label>
+                <textarea th:field="*{description}" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Цена за ночь (руб.):</label>
+                <input type="number" th:field="*{price}" step="0.01" min="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Вместимость (человек):</label>
+                <input type="number" th:field="*{capacity}" min="1" max="10" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" th:field="*{available}">
+                    Доступна для бронирования
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit">Сохранить изменения</button>
+                <a th:href="@{'/rooms/' + ${room.id}}" style="margin-left: 10px; color: #007bff;">Отмена</a>
+            </div>
+        </form>
+        
+        <div sec:authorize="hasRole('ADMIN')" style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+            <h3>Опасная зона</h3>
+            <form th:action="@{'/rooms/delete/' + ${room.id}}" method="post"
+                  onsubmit="return confirm('Вы уверены, что хотите удалить эту комнату? Это действие нельзя отменить.');">
+                <button type="submit" class="btn-danger">Удалить комнату</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

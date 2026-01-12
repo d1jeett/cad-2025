@@ -1,36 +1,309 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <meta charset="UTF-8">
-    <title>Гостиница</title>
-
+    <title>Система бронирования отеля</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 20px;
+        }
+        .left-panel {
+            flex: 1;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .right-panel {
+            flex: 2;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .room-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            background: #f9f9f9;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .btn-add {
+            background: #28a745;
+        }
+        .btn-add:hover {
+            background: #218838;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            color: #ecf0f1;
+        }
+        h2, h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-users {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .booking-form {
+            background: #e8f4fd;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #b6d4fe;
+        }
+    </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>Информационная система «Гостиница»</h1>
-
-    <p>
-        Данное приложение разработано в рамках курсового проекта
-        по дисциплине «Разработка кросс-платформенных приложений»
-        с использованием фреймворка Spring.
-    </p>
-
-    <div class="menu">
-        <a href="#">Главная</a>
-        <a href="#">Номера</a>
-        <a href="#">Бронирование</a>
-        <a href="#">Контакты</a>
+    <!-- Шапка -->
+    <div class="header">
+        <h1>🏨 Система бронирования отеля</h1>
+        <div class="user-info">
+            <div sec:authorize="!isAuthenticated()">
+                <a href="/login" style="color: white; margin-right: 10px;">Вход</a>
+            </div>
+            <div sec:authorize="isAuthenticated()">
+                <span>Пользователь: <span sec:authentication="name"></span></span>
+                <form th:action="@{/logout}" method="post" style="display:inline; margin-left: 10px;">
+                    <button type="submit" style="padding: 3px 8px; font-size: 12px;">Выход</button>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <h2>Описание</h2>
-        <p>
-            Приложение предназначено для автоматизации работы гостиницы.
-            Оно позволяет управлять информацией о номерах, клиентах
-            и бронированиях.
-        </p>
+    <!-- Основной контейнер -->
+    <div class="container">
+        <!-- Левый блок: Управление комнатами -->
+        <div class="left-panel">
+            <h2>Управление комнатами</h2>
+            
+            <!-- Форма добавления комнаты -->
+            <div sec:authorize="hasRole('MODERATOR') or hasRole('ADMIN')" class="section">
+                <h3>Добавить новую комнату</h3>
+                
+                <form th:action="@{/rooms/create}" method="post">
+                    <input type="text" name="number" placeholder="Номер комнаты (например: 23)" required>
+                    
+                    <select name="type" required>
+                        <option value="">Выберите тип</option>
+                        <option value="STANDARD">Стандарт</option>
+                        <option value="VIP">VIP</option>
+                        <option value="DELUXE">Делюкс</option>
+                        <option value="SUITE">Люкс</option>
+                    </select>
+                    
+                    <textarea name="description" placeholder="Описание" rows="2"></textarea>
+                    
+                    <input type="number" name="price" placeholder="Цена (руб.)" step="0.01" required>
+                    
+                    <input type="number" name="capacity" placeholder="Вместимость (чел.)" required>
+                    
+                    <label style="display: block; margin: 5px 0;">
+                        <input type="checkbox" name="available" checked> Доступна для бронирования
+                    </label>
+                    
+                    <button type="submit" class="btn-add">+ Добавить комнату</button>
+                </form>
+            </div>
+
+            <!-- Тестовые пользователи -->
+            <div class="test-users">
+                <strong>Тестовые пользователи:</strong><br>
+                • user / 1234 (обычный пользователь)<br>
+                • moderator / 1234 (модератор)<br>
+                • admin / 1234 (администратор)
+            </div>
+
+            <!-- Мои бронирования -->
+            <div sec:authorize="isAuthenticated()" class="section">
+                <h3>Мои бронирования</h3>
+                <a href="/booking/my" style="color: #007bff; text-decoration: none;">→ Посмотреть все мои бронирования</a>
+            </div>
+
+            <!-- Для гостей -->
+            <div sec:authorize="!isAuthenticated()" class="section">
+                <h3>Для бронирования</h3>
+                <p>Войдите в систему, чтобы бронировать комнаты</p>
+                <a href="/login" style="color: #007bff; text-decoration: none;">→ Войти в систему</a>
+            </div>
+        </div>
+
+        <!-- Правый блок: Список комнат для бронирования -->
+        <div class="right-panel">
+            <h2>Доступные для бронирования комнаты</h2>
+            
+            <!-- Сообщения -->
+            <div th:if="${success}" class="message success">
+                [[${success}]]
+            </div>
+            <div th:if="${error}" class="message error">
+                [[${error}]]
+            </div>
+            
+            <!-- Список комнат -->
+            <div th:if="${rooms != null and !rooms.empty}">
+                <div th:each="room : ${rooms}">
+                    <div class="room-card">
+                        <h3>Комната №[[${room.number}]] ([[${room.type}]])</h3>
+                        <p><strong>Вместимость:</strong> [[${room.capacity}]] чел.</p>
+                        <p><strong>Цена:</strong> [[${room.price}]] руб./ночь</p>
+                        <p>[[${room.description}]]</p>
+                        
+                        <!-- Форма бронирования -->
+                        <div sec:authorize="isAuthenticated()" class="booking-form">
+                            <h4>Забронировать эту комнату:</h4>
+                            <form th:action="@{/booking/create}" method="post">
+                                <input type="hidden" name="roomId" th:value="${room.id}">
+                                
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 12px;">Дата заезда:</label>
+                                        <input type="date" name="checkIn" required id="checkIn_[[${room.id}]]">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 12px;">Дата выезда:</label>
+                                        <input type="date" name="checkOut" required id="checkOut_[[${room.id}]]">
+                                    </div>
+                                </div>
+                                
+                                <input type="text" name="guestName" placeholder="Ваше имя" required>
+                                <input type="email" name="guestEmail" placeholder="Email" required>
+                                <textarea name="specialRequests" placeholder="Дополнительные пожелания" rows="2"></textarea>
+                                
+                                <button type="submit">Забронировать</button>
+                            </form>
+                        </div>
+                        
+                        <!-- Для неавторизованных -->
+                        <div sec:authorize="!isAuthenticated()">
+                            <p style="color: #666; font-style: italic;">Для бронирования войдите в систему</p>
+                        </div>
+                        
+                        <!-- Кнопка удаления (только для админов) -->
+                        <div sec:authorize="hasRole('ADMIN')" style="margin-top: 10px;">
+                            <form th:action="@{'/rooms/delete/' + ${room.id}}" method="post" 
+                                  th:attr="onsubmit='return confirm(\'Удалить комнату №' + ${room.number} + '?\')'">
+                                <button type="submit" class="btn-danger" style="padding: 3px 8px; font-size: 12px;">Удалить комнату</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Если комнат нет -->
+            <div th:if="${rooms == null or rooms.empty}">
+                <p style="color: #666; font-style: italic;">Нет доступных комнат для бронирования.</p>
+                <div sec:authorize="hasRole('MODERATOR') or hasRole('ADMIN')">
+                    <p>Добавьте первую комнату в левой панели.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <h2>Функциональные
+    <script>
+        // Автозаполнение дат
+        document.addEventListener('DOMContentLoaded', function() {
+            // Устанавливаем минимальную дату заезда - завтра
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split('T')[0];
+            
+            // Устанавливаем минимальную дату выезда - послезавтра
+            const dayAfterTomorrow = new Date();
+            dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+            const minOutDate = dayAfterTomorrow.toISOString().split('T')[0];
+            
+            // Устанавливаем значения для всех полей даты
+            const checkInInputs = document.querySelectorAll('input[name="checkIn"]');
+            const checkOutInputs = document.querySelectorAll('input[name="checkOut"]');
+            
+            checkInInputs.forEach(input => {
+                input.min = minDate;
+                input.value = minDate; // устанавливаем завтра по умолчанию
+            });
+            
+            checkOutInputs.forEach(input => {
+                input.min = minOutDate;
+                input.value = minOutDate; // устанавливаем послезавтра по умолчанию
+            });
+            
+            // Предотвращение двойной отправки форм
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.textContent = 'Обработка...';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

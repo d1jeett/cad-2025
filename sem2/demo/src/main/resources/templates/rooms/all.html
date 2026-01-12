@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Все комнаты</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .room-card { border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+        .room-header { display: flex; justify-content: space-between; align-items: center; }
+        .room-type { background: #e9ecef; padding: 3px 8px; border-radius: 3px; font-size: 12px; }
+        .room-price { font-weight: bold; color: #28a745; }
+        .room-actions { margin-top: 10px; }
+        .btn { padding: 5px 10px; margin-right: 5px; text-decoration: none; border-radius: 3px; }
+        .btn-view { background: #007bff; color: white; }
+        .btn-edit { background: #17a2b8; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Все комнаты отеля</h1>
+    <a href="/">← На главную</a>
+    
+    <div class="rooms-grid" th:if="${not rooms.empty}">
+        <div th:each="room : ${rooms}" class="room-card">
+            <div class="room-header">
+                <h3>Комната №[[${room.number}]]</h3>
+                <span class="room-type">[[${room.type}]]</span>
+            </div>
+            
+            <p>[[${room.description}]]</p>
+            
+            <div>
+                <strong>Цена:</strong> <span class="room-price">[[${room.price}]] руб./ночь</span>
+            </div>
+            <div>
+                <strong>Вместимость:</strong> [[${room.capacity}]] чел.
+            </div>
+            <div>
+                <strong>Статус:</strong> 
+                <span th:if="${room.available}" style="color: green;">Доступна</span>
+                <span th:unless="${room.available}" style="color: red;">Недоступна</span>
+            </div>
+            
+            <div class="room-actions">
+                <a th:href="@{'/rooms/' + ${room.id}}" class="btn btn-view">Подробнее</a>
+                <a sec:authorize="hasAnyRole('MODERATOR', 'ADMIN')" 
+                   th:href="@{'/rooms/edit/' + ${room.id}}" 
+                   class="btn btn-edit">Редактировать</a>
+            </div>
+        </div>
+    </div>
+    
+    <div th:if="${rooms.empty}">
+        <p>В отеле пока нет комнат.</p>
+        <a href="/rooms/create">Добавить первую комнату</a>
+    </div>
+</body>
+</html>

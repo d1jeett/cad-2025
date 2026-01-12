@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление комнатами</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .stats { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .stat-card { background: white; padding: 15px; border-radius: 3px; text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #f2f2f2; }
+        .btn { padding: 5px 10px; text-decoration: none; border-radius: 3px; }
+        .btn-edit { background: #17a2b8; color: white; }
+        .btn-delete { background: #dc3545; color: white; }
+        .available { color: green; }
+        .unavailable { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Управление комнатами</h1>
+    <a href="/">← На главную</a>
+    
+    <!-- Статистика -->
+    <div class="stats">
+        <h2>Статистика</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">[[${totalRooms}]]</div>
+                <div>Всего комнат</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">[[${availableRooms}]]</div>
+                <div>Доступно</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">[[${occupiedRooms}]]</div>
+                <div>Занято</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">
+                    <a href="/rooms/create" style="color: #28a745; text-decoration: none;">+ Добавить</a>
+                </div>
+                <div>Новая комната</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Список комнат -->
+    <table>
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Тип</th>
+                <th>Цена</th>
+                <th>Вместимость</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="room : ${rooms}">
+                <td>[[${room.number}]]</td>
+                <td>[[${room.type}]]</td>
+                <td>[[${room.price}]] руб.</td>
+                <td>[[${room.capacity}]] чел.</td>
+                <td>
+                    <span th:if="${room.available}" class="available">✓ Доступна</span>
+                    <span th:unless="${room.available}" class="unavailable">✗ Недоступна</span>
+                </td>
+                <td>
+                    <a th:href="@{'/rooms/' + ${room.id}}" class="btn">👁️</a>
+                    <a th:href="@{'/rooms/edit/' + ${room.id}}" class="btn btn-edit">✏️</a>
+                    <a th:href="@{'/booking/pending'}" class="btn">📋</a>
+                    <span sec:authorize="hasRole('ADMIN')">
+                        <a th:href="@{'/rooms/delete/' + ${room.id}}" 
+                           class="btn btn-delete"
+                           onclick="return confirm('Удалить комнату?')">🗑️</a>
+                    </span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ожидающие бронирования</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .booking-card { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        .btn { padding: 5px 10px; margin: 0 5px; text-decoration: none; }
+        .btn-approve { background: green; color: white; }
+        .btn-reject { background: red; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Ожидающие бронирования</h1>
+    <a href="/">На главную</a>
+    
+    <div th:if="${bookings != null and !bookings.empty}">
+        <div th:each="booking : ${bookings}">
+            <div class="booking-card">
+                <h3>Бронирование №[[${booking.id}]]</h3>
+                <p>Комната: №[[${booking.room.number}]]</p>
+                <p>Гость: [[${booking.guestName}]] ([[${booking.guestEmail}]])</p>
+                <p>Даты: [[${booking.checkInDate}]] - [[${booking.checkOutDate}]]</p>
+                
+                <a th:href="@{/booking/approve/} + ${booking.id}" class="btn btn-approve">Одобрить</a>
+                <a th:href="@{/booking/reject/} + ${booking.id}" class="btn btn-reject">Отклонить</a>
+            </div>
+        </div>
+    </div>
+    
+    <div th:if="${bookings == null or bookings.empty}">
+        <p>Нет ожидающих бронирований.</p>
+    </div>
+</body>
+</html>

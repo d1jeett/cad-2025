@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Все бронирования</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Все бронирования</h1>
+    <a href="/">На главную</a>
+    
+    <table th:if="${bookings != null and !bookings.empty}">
+        <tr>
+            <th>ID</th>
+            <th>Комната</th>
+            <th>Гость</th>
+            <th>Даты</th>
+            <th>Статус</th>
+            <th>Стоимость</th>
+        </tr>
+        <tr th:each="booking : ${bookings}">
+            <td>[[${booking.id}]]</td>
+            <td>№[[${booking.room.number}]]</td>
+            <td>[[${booking.guestName}]]</td>
+            <td>[[${booking.checkInDate}]] - [[${booking.checkOutDate}]]</td>
+            <td>[[${booking.status}]]</td>
+            <td>[[${booking.totalPrice}]] руб.</td>
+        </tr>
+    </table>
+    
+    <div th:if="${bookings == null or bookings.empty}">
+        <p>Нет бронирований.</p>
+    </div>
+</body>
+</html>
