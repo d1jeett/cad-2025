@@ -171,6 +171,54 @@ public class BookingService {
     }
     
     /**
+     * Получить бронирования по email гостя
+     */
+    public List<Booking> getBookingsByGuestEmail(String guestEmail) {
+        if (guestEmail == null || guestEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email гостя не может быть пустым");
+        }
+        return bookingRepository.findByGuestEmail(guestEmail);
+    }
+    
+    /**
+     * Получить бронирования по email пользователя
+     */
+    public List<Booking> getBookingsByUserEmail(String userEmail) {
+        if (userEmail == null || userEmail.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email пользователя не может быть пустым");
+        }
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь с email " + userEmail + " не найден"));
+        return bookingRepository.findByUser(user);
+    }
+    
+    /**
+     * Получить бронирования по любому email (гостя или пользователя)
+     */
+    public List<Booking> getBookingsByAnyEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email не может быть пустым");
+        }
+        
+        // Сначала ищем по email гостя
+        List<Booking> guestBookings = bookingRepository.findByGuestEmail(email);
+        
+        // Пытаемся найти пользователя по email
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isPresent()) {
+            // Добавляем бронирования пользователя
+            List<Booking> userBookings = bookingRepository.findByUser(userOptional.get());
+            
+            // Объединяем списки, убирая дубликаты
+            guestBookings.addAll(userBookings.stream()
+                .filter(booking -> !guestBookings.contains(booking))
+                .toList());
+        }
+        
+        return guestBookings;
+    }
+    
+    /**
      * Проверить доступность комнаты на даты
      */
     public boolean isRoomAvailableForDates(Long roomId, LocalDate checkIn, LocalDate checkOut) {

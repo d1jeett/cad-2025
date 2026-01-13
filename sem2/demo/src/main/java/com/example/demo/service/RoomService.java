@@ -25,7 +25,6 @@ public class RoomService {
         return roomRepository.findAll();
     }
     
-    // ДОБАВЬТЕ ЭТОТ МЕТОД!
     public Room saveRoom(Room room) {
         return roomRepository.save(room);
     }

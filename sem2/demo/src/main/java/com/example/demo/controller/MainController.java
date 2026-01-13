@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Room;
 import com.example.demo.service.RoomService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
